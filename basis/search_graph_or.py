@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 from scrapegraphai.graphs import SearchGraph
 from scrapegraphai.graphs import SmartScraperGraph
+from scrapegraphai.utils.convert_to_md import convert_to_md
 
 load_dotenv()
 
@@ -54,12 +55,16 @@ graph_config = {
 #     config=graph_config
 # )
 
-prompt="""Extract the reddit post and all its reply, 
-then extract the content of all replies and document the content to a clear guide on how to trade meme coin"""
+# prompt="""Extract the reddit post and all its reply, 
+# then extract the content of all replies and document the content to a clear guide on how to trade meme coin"""
+# source="https://www.reddit.com/r/solana/comments/1i7xk0t/how_to_trade_memecoins/"
+
+prompt="""Extract the article"""
+source="https://maticz.com/how-to-make-money-with-meme-coins"
 
 search_graph = SmartScraperGraph(
     prompt=prompt,
-    source="https://www.reddit.com/r/solana/comments/1i7xk0t/how_to_trade_memecoins/",
+    source=source,
     config=graph_config
 )
 
