@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 from pprint import pprint
 from typing import List
 from scrapers.google_scraper import GoogleScraper
@@ -8,7 +9,7 @@ from storage.file_manager import FileManager
 from utils.url_validator import URLValidator
 import json
 
-def main():
+async def main():
     """
     Main entry point for the web scraper application
     
@@ -37,9 +38,10 @@ def main():
     
     # Step 1: Get URLs from search engine
     print(f"Searching for: {keywords_list}")
-    urls = search_engine.search(keywords_list, max_results=5)    
+    urls = await search_engine.search(keywords_list, max_results=5)
+    print("urls returned:", urls)
     
     pass
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -19,6 +19,7 @@ from browser_use.browser.context import (
     BrowserContextWindowSize,
 )
 from pyobjtojson import obj_to_json
+import time
 
 dotenv.load_dotenv()
 
@@ -67,6 +68,8 @@ def extract_json_array(text):
         return None
 
 async def record_activity(agent_obj):
+    global urls_returned
+    
     """Hook function that captures and records agent activity at each step"""
     print('--- ON_STEP_END HOOK ---')
 
@@ -89,30 +92,25 @@ async def record_activity(agent_obj):
         clean_arr = extract_json_array(extracted_content_json_last_elem)
         if clean_arr and isinstance(clean_arr, list) and all(isinstance(elem, str) and elem.startswith("http") for elem in clean_arr):
             print("clean arr", clean_arr)
+            urls_returned = clean_arr
 
-task = """
-Do the following tasks step by step, each task starts with an asterisk (*);
-* Visit "https://www.google.com";
-* search for the keyword: input `solid and reliable memecoin trading logic`, then press ENTER button to trigger a search;
-* append URL parameter "&udm=14" to the browser's current URL, then press ENTER button to use the "web" filter to refine the search result;
-* extract all the search results' URLs; 
-* if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
-* convert the extracted URLs into a json format array, each element of the array is a URL only, no index; 
-"""
+urls_returned = []
 
-async def main():
-    keyword = 'profitable memecoin trading strategies logic'
+async def search_get_urls(keywords):
+    global urls_returned
+    
+    task = f"""
+    Do the following tasks step by step, each task starts with an asterisk (*);
+    * Visit "https://www.google.com";
+    * search for the keyword: input `{keywords}`, then press ENTER button to trigger a search;
+    * append URL parameter "&udm=14" to the browser's current URL, then press ENTER button to use the "web" filter to refine the search result;
+    * extract all the search results' URLs; 
+    * if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
+    * convert the extracted URLs into a json format array, each element of the array is a URL only, no index; 
+    """
     
     async with await browser.new_context(
-        config=BrowserContextConfig(
-            # cookies_file="./gmail.cookie.json",
-            # trace_path="./tmp/traces",
-            # save_recording_path="./tmp/record_videos",
-            # no_viewport=False,
-            # browser_window_size=BrowserContextWindowSize(
-            #     width=window_w, height=window_h
-            # ),
-        )
+        config=BrowserContextConfig()
     ) as browser_context:
         agent = Agent(
             task=task,
@@ -126,9 +124,27 @@ async def main():
             on_step_end=record_activity,
         )
         await browser.close()
+        
+        # check if "urls_returned" is an empty array, if yes, sleep 2 secondes and check again, if no, print it and exit
+        retries = 10
+        while not urls_returned and retries > 0:
+            print("No URLs found yet, waiting 2 seconds...")
+            await asyncio.sleep(1)
+            retries -= 1
+
+        if urls_returned:
+            if len(urls_returned) > 3:
+                print("Extracted URLs:", urls_returned)
+                return urls_returned
+                sys.exit(0)
+            else:
+                raise KeyError(f'number of URL not enough: {urls_returned}')
+        else:
+            print("No URLs extracted after waiting.")
+            sys.exit(1)
 
         input('Press Enter to close...')
 
 
 if __name__ == '__main__':
-	asyncio.run(main())
+	asyncio.run(search_get_urls("solid and reliable memecoin trading logic"))
