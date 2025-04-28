@@ -47,11 +47,11 @@ browser = Browser(
 task = """
 Do the following tasks step by step, each task starts with an asterisk (*);
 * Visit "https://www.google.com";
-* search for the keyword: `solid and reliable memecoin trading logic`;
+* search for the keyword: input `solid and reliable memecoin trading logic`, then press ENTER button;
 * use the "web" filter to refine the search result;
 * extract all the search results' URLs; 
-* if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only
-* convert the extracted URLs into a json format array, each element of the array is a URL only, no index. 
+* if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
+* convert the extracted URLs into a json format array, each element of the array is a URL only, no index; 
 """
 
 async def record_activity(agent_obj):
