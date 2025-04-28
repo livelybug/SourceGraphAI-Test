@@ -41,18 +41,30 @@ browser = Browser(
 	)
 )
 
-# * find the first 5 text-based, non-youtube result, 
-# So there would be 5 urls saved in the end.
-# * extract all search results' URLs, the extraction only contains URLs, no title, no source, no description, or anything else; 
-task = """
-Do the following tasks step by step, each task starts with an asterisk (*);
-* Visit "https://www.google.com";
-* search for the keyword: input `solid and reliable memecoin trading logic`, then press ENTER button;
-* use the "web" filter to refine the search result;
-* extract all the search results' URLs; 
-* if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
-* convert the extracted URLs into a json format array, each element of the array is a URL only, no index; 
-"""
+def extract_json_array(text):
+    """
+    Extracts the first JSON array from text with optional prefix.
+    Handles multi-line arrays and trailing commas.
+    """
+    # Find JSON array pattern (allowing for multi-line content)
+    array_match = re.search(r'\[\s*([\s\S]*?)\s*\]', text, re.DOTALL)
+    
+    if not array_match:
+        return None
+        
+    try:
+        # Clean up potential JSON issues
+        array_content = array_match.group(0)
+        
+        # Remove trailing commas before closing bracket
+        cleaned_content = re.sub(r',\s*\]', ']', array_content)
+        
+        # Parse cleaned JSON
+        return json.loads(cleaned_content)
+        
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {str(e)}")
+        return None
 
 async def record_activity(agent_obj):
     """Hook function that captures and records agent activity at each step"""
@@ -74,23 +86,19 @@ async def record_activity(agent_obj):
     )
     if len(extracted_content_json) > 0:
         extracted_content_json_last_elem = extracted_content_json[-1]
-    
-    print(1111, extracted_content_json_last_elem)
-    # extract_url(extracted_content_json_last_elem)
+        clean_arr = extract_json_array(extracted_content_json_last_elem)
+        if clean_arr and isinstance(clean_arr, list) and all(isinstance(elem, str) and elem.startswith("http") for elem in clean_arr):
+            print("clean arr", clean_arr)
 
-
-def extract_url(raw_selection):
-    match = re.search(r"\[\s*(.*?)\s*\]", raw_selection, re.DOTALL)
-    if match and match.group(1):
-        json_content = match.group(1)
-        data = json.loads(json_content)
-        print(11111, data)
-        if isinstance(data, list) and all(isinstance(elem, str) and elem.startswith("http") for elem in data):
-            return data
-        # else:
-        #     raise KeyError(f'No URL found in JSON:\n {data}')
-    else:
-        print("No JSON code block found.")    
+task = """
+Do the following tasks step by step, each task starts with an asterisk (*);
+* Visit "https://www.google.com";
+* search for the keyword: input `solid and reliable memecoin trading logic`, then press ENTER button to trigger a search;
+* append URL parameter "&udm=14" to the browser's current URL, then press ENTER button to use the "web" filter to refine the search result;
+* extract all the search results' URLs; 
+* if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
+* convert the extracted URLs into a json format array, each element of the array is a URL only, no index; 
+"""
 
 async def main():
     keyword = 'profitable memecoin trading strategies logic'
@@ -117,9 +125,6 @@ async def main():
             max_steps=20,
             on_step_end=record_activity,
         )
-        # print(history)
-        
-        # history.save_to_file("history.json")
         await browser.close()
 
         input('Press Enter to close...')
