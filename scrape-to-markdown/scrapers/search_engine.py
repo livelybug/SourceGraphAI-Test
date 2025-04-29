@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List
 
 class SearchEngine(ABC):
     """Base class for search engine implementations"""

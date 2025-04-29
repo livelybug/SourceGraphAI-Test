@@ -1,13 +1,8 @@
-import argparse
 import asyncio
 from pprint import pprint
-from typing import List
 from scrapers.google_scraper import GoogleScraper
-from processors.html_downloader import HTMLDownloader
-from processors.html_to_markdown import HTMLToMarkdown
-from storage.file_manager import FileManager
-from utils.url_validator import URLValidator
 import json
+from utils.utils import save_url_extract
 
 async def main():
     """
@@ -40,6 +35,7 @@ async def main():
     print(f"Searching for: {keywords_list}")
     urls = await search_engine.search(keywords_list, 50)
     print("urls returned:", urls)
+    save_url_extract("all", urls, "url_kw_arr.json", 100)
     
     pass
 

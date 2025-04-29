@@ -1,5 +1,3 @@
-import os
-from pathlib import Path
 
 class FileManager:
     """Manages file operations for saving Markdown content"""

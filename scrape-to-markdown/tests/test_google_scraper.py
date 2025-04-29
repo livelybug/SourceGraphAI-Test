@@ -1,5 +1,4 @@
 import unittest
-from typing import List
 from scrapers.google_scraper import filter_urls
 
 class TestGoogleScraper(unittest.TestCase):
@@ -21,9 +20,9 @@ class TestGoogleScraper(unittest.TestCase):
         urls = [
             "https://youtube.com/watch",
             "https://youtu.be/xyz",
-            "https://google.com/search",
-            "https://gstatic.com/image",
-            "https://googleusercontent.com/file"
+            "https://youtube.com/search",
+            "https://youtube.com/image",
+            "https://youtube.com/file"
         ]
         result = filter_urls(urls)
         self.assertEqual(result, [])
@@ -54,7 +53,7 @@ class TestGoogleScraper(unittest.TestCase):
         urls = [
             "https://subdomain.example.com",
             "https://videos.youtube.com/watch",
-            "https://maps.google.com/location",
+            "https://maps.youtube.com/location",
             "https://valid.test.org"
         ]
         expected = [

@@ -1,6 +1,5 @@
 import json
 import os
-import pprint
 import re
 import sys
 
@@ -9,18 +8,13 @@ import asyncio
 
 import dotenv
 from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 from browser_use import Agent, AgentHistoryList, Browser, BrowserConfig
-from pydantic import SecretStr, Field
-from typing import Optional
-from langchain_core.utils.utils import secret_from_env
+from pydantic import SecretStr
 from browser_use.browser.context import (
     BrowserContextConfig,
-    BrowserContextWindowSize,
 )
 from pyobjtojson import obj_to_json
-import time
-from datetime import datetime
+from utils.utils import save_url_extract
 
 dotenv.load_dotenv()
 
@@ -76,9 +70,9 @@ async def record_activity(agent_obj):
 
     # Make sure we have state history
     if hasattr(agent_obj, "state"):
-        history = agent_obj.state.history
+        # history = agent_obj.state.history
+        pass
     else:
-        history = None
         print("Warning: Agent has no state history")
         return
 
@@ -120,7 +114,7 @@ async def search_get_urls(keywords, max_results: int = 10):
             browser_context=browser_context
         )
 
-        history: AgentHistoryList = await agent.run(
+        _history: AgentHistoryList = await agent.run(
             max_steps=20,
             on_step_end=record_activity,
         )
@@ -136,7 +130,7 @@ async def search_get_urls(keywords, max_results: int = 10):
         if urls_returned:
             if len(urls_returned) > 3:
                 print("Extracted URLs:", urls_returned)
-                save_url_extract(keywords)
+                save_url_extract(keywords, urls_returned, "url_extract_hist.json")
                 return urls_returned[:max_results]
             else:
                 raise KeyError(f'number of URL not enough: {urls_returned}')
@@ -145,26 +139,6 @@ async def search_get_urls(keywords, max_results: int = 10):
             sys.exit(1)
 
         input('Press Enter to close...')
-
-def save_url_extract(keywords, max_results: int = 20):
-    hist_file = "url_extract_hist.json"
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    hist_key = f"{now} | {keywords}"
-
-    # Load existing history if file exists
-    if os.path.exists(hist_file):
-        with open(hist_file, "r") as f:
-            try:
-                hist_data = json.load(f)
-            except Exception:
-                hist_data = {}
-    else:
-        hist_data = {}
-
-    hist_data[hist_key] = urls_returned[:max_results]
-
-    with open(hist_file, "w") as f:
-        json.dump(hist_data, f, indent=2)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 from typing import Optional
-from datetime import datetime
 
 class HTMLToMarkdown:
     """Converts HTML content to Markdown format"""
