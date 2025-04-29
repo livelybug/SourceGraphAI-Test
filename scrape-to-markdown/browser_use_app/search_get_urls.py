@@ -19,7 +19,11 @@ from utils.utils import save_url_extract
 dotenv.load_dotenv()
 
 api_key = os.getenv("DEEPSEEK_API_KEY")
-llm=ChatOpenAI(base_url='https://api.deepseek.com/v1', model='deepseek-chat', api_key=SecretStr(api_key))
+llm=ChatOpenAI(
+    base_url='https://api.deepseek.com/v1', 
+    model='deepseek-chat', 
+    api_key=SecretStr(api_key),
+    )
 
 # api_key = os.getenv('GEMINI_API_KEY')
 # llm = ChatGoogleGenerativeAI(
@@ -93,14 +97,14 @@ urls_returned = []
 
 async def search_get_urls(keywords, max_results: int = 10):
     global urls_returned
+    # * if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
     
     task = f"""
-    Do the following tasks step by step, each task starts with an asterisk (*);
+    Do the following tasks step by step, each step starts with an asterisk (*);
     * Visit "https://www.google.com";
     * search for the keyword: input `{keywords}`, then press ENTER button to trigger a search;
     * append URL parameter "&udm=14" to the browser's current URL, then press ENTER button to use the "web" filter to refine the search result;
-    * extract all the search results' URLs; 
-    * if the extraction only contains metadata, strip the metadata, so the extraction contains URLs only;
+    * extract all the search results' original URLs, and don't strip the URLs; 
     * convert the extracted URLs into a json format array, each element of the array is a URL only, no index; 
     """
     
