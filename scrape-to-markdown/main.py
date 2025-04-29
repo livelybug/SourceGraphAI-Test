@@ -38,7 +38,7 @@ async def main():
     
     # Step 1: Get URLs from search engine
     print(f"Searching for: {keywords_list}")
-    urls = await search_engine.search(keywords_list, max_results=5)
+    urls = await search_engine.search(keywords_list, 50)
     print("urls returned:", urls)
     
     pass

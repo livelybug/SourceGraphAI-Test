@@ -20,6 +20,7 @@ from browser_use.browser.context import (
 )
 from pyobjtojson import obj_to_json
 import time
+from datetime import datetime
 
 dotenv.load_dotenv()
 
@@ -96,7 +97,7 @@ async def record_activity(agent_obj):
 
 urls_returned = []
 
-async def search_get_urls(keywords):
+async def search_get_urls(keywords, max_results: int = 10):
     global urls_returned
     
     task = f"""
@@ -135,8 +136,8 @@ async def search_get_urls(keywords):
         if urls_returned:
             if len(urls_returned) > 3:
                 print("Extracted URLs:", urls_returned)
-                return urls_returned
-                sys.exit(0)
+                save_url_extract(keywords)
+                return urls_returned[:max_results]
             else:
                 raise KeyError(f'number of URL not enough: {urls_returned}')
         else:
@@ -144,6 +145,26 @@ async def search_get_urls(keywords):
             sys.exit(1)
 
         input('Press Enter to close...')
+
+def save_url_extract(keywords, max_results: int = 20):
+    hist_file = "url_extract_hist.json"
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    hist_key = f"{now} | {keywords}"
+
+    # Load existing history if file exists
+    if os.path.exists(hist_file):
+        with open(hist_file, "r") as f:
+            try:
+                hist_data = json.load(f)
+            except Exception:
+                hist_data = {}
+    else:
+        hist_data = {}
+
+    hist_data[hist_key] = urls_returned[:max_results]
+
+    with open(hist_file, "w") as f:
+        json.dump(hist_data, f, indent=2)
 
 
 if __name__ == '__main__':

@@ -31,7 +31,7 @@ class GoogleScraper(SearchEngine):
                     
         pass
         
-    async def search(self, keywords: List[str], max_results: int = 20) -> List[str]:
+    async def search(self, keywords: List[str], max_results: int = 50) -> List[str]:
         """
         Search Google for URLs based on keywords
         
@@ -42,8 +42,13 @@ class GoogleScraper(SearchEngine):
         Returns:
             List of URLs matching the search criteria
         """
-        
-        return await search_get_urls(keywords[0])
+        all_urls = []
+        for keyword in keywords:
+            urls = await search_get_urls(keyword)
+            urls = filter_urls(urls)
+            all_urls.extend(urls)
+            all_urls = list(dict.fromkeys(all_urls))
+        return all_urls[:max_results]
     
 def _is_chrome_running_with_port(port: int) -> bool:
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
@@ -55,4 +60,26 @@ def _is_chrome_running_with_port(port: int) -> bool:
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
     return False
+
+def filter_urls(urls: List[str]) -> List[str]:
+    """
+    Filter out unwanted URLs (e.g., YouTube)
     
+    Args:
+        urls: List of URLs to filter
+        
+    Returns:
+        Filtered list of URLs
+    """
+    excluded_domains = [
+        "youtube.com", 
+        "youtu.be",
+        "google.com",
+        "gstatic.com",
+        "googleusercontent.com"
+    ]
+    filtered = []
+    for url in urls:
+        if not any(domain in url for domain in excluded_domains):
+            filtered.append(url)
+    return filtered
