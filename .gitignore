@@ -1,4 +1,10 @@
 .idea/
+scrape-to-markdown/processors/file_store*
+scrape-to-markdown/config/kws_urls.json
+scrape-to-markdown/config/keywords.json
+url_extract_hist.json
+url_kw_arr.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -173,3 +179,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+/scrape-to-markdown/processors/file_store/

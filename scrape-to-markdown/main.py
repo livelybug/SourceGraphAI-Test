@@ -1,8 +1,11 @@
+import argparse
 import asyncio
+import os
 from pprint import pprint
 from scrapers.google_scraper import GoogleScraper
 import json
-from utils.utils import save_url_extract
+from utils.utils import save_url_extract, read_json_file
+from processors.html_to_markdown import HTMLToMarkdown
 
 async def main():
     """
@@ -15,27 +18,32 @@ async def main():
     4. Download and process each URL
     5. Save content as Markdown files
     """
+    parser = argparse.ArgumentParser(description="Web scraper that search keywords to Markdown files")
+    parser.add_argument("--skip-search", type=bool, default=False, help="If True, skip search and download from urls in file")
+    args = parser.parse_args()
+    pprint(args)
     
-    # Read keywords from file "scrape-to-markdown/config/keywords.json"
-    with open("scrape-to-markdown/config/keywords.json", "r") as f:
-        keywords = json.load(f)
-        # convert keywords into python object
-        if isinstance(keywords, dict):
-            keywords_list = list(keywords.values())
-        elif isinstance(keywords, list):
-            keywords_list = keywords
-        else:
-            raise ValueError("Unexpected JSON structure for keywords.")
-        pprint(keywords_list)
+    # Read keywords from file
+    keywords_list = read_json_file("scrape-to-markdown/config/keywords.json")
+    print(f"Searching for: {keywords_list}")
     
     # Initialize components
     search_engine = GoogleScraper()
-    
+    converter = HTMLToMarkdown()
+
+    urls = []
     # Step 1: Get URLs from search engine
-    print(f"Searching for: {keywords_list}")
     urls = await search_engine.search(keywords_list, 50)
     print("urls returned:", urls)
-    save_url_extract("all", urls, "url_kw_arr.json", 100)
+    save_url_extract(
+        "all", urls, 
+        "url_kw_arr.json", 100, 
+        "scrape-to-markdown/config/kws_urls.json")
+    
+    # Step 2: Process each URL
+    if args.skip_search: # download from previous urls in file
+        urls = read_json_file("scrape-to-markdown/config/kws_urls.json")
+    converter.convert(None, urls)
     
     pass
 
