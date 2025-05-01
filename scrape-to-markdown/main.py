@@ -5,6 +5,7 @@ from pprint import pprint
 from scrapers.google_scraper import GoogleScraper
 import json
 from utils.utils import save_url_extract, read_json_file
+from utils.merge_md import merge_markdown_files
 from processors.html_to_markdown import HTMLToMarkdown
 
 async def main():
@@ -16,7 +17,8 @@ async def main():
     2. Initialize components
     3. Search for URLs based on keywords
     4. Download and process each URL
-    5. Save content as Markdown files
+    5. Save content as Markdown files to "scrape-to-markdown/processors/file_store"
+    6, Merge all markdown files
     """
     parser = argparse.ArgumentParser(description="Web scraper that search keywords to Markdown files")
     parser.add_argument("--skip-search", type=bool, default=False, help="If True, skip search and download from urls in file")
@@ -33,18 +35,21 @@ async def main():
 
     urls = []
     # Step 1: Get URLs from search engine
-    urls = await search_engine.search(keywords_list, 50)
-    print("urls returned:", urls)
-    save_url_extract(
-        "all", urls, 
-        "url_kw_arr.json", 100, 
-        "scrape-to-markdown/config/kws_urls.json")
+    if not args.skip_search:
+        urls = await search_engine.search(keywords_list, 50)
+        print("urls returned:", urls)
+        save_url_extract(
+            "all", urls, 
+            "url_kw_arr.json", 100, 
+            "scrape-to-markdown/config/kws_urls.json")
     
     # Step 2: Process each URL
     if args.skip_search: # download from previous urls in file
         urls = read_json_file("scrape-to-markdown/config/kws_urls.json")
     converter.convert(None, urls)
     
+    #  Step 3: Merge all mardown files under a folder to one
+    merge_markdown_files("scrape-to-markdown/processors/file_store")
     pass
 
 if __name__ == "__main__":

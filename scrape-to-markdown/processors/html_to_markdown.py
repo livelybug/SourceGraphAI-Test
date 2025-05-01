@@ -7,6 +7,7 @@ from storage.file_manager import FileManager
 
 jina_key = os.getenv("JINA_API_KEY")
 jina_url = "https://r.jina.ai/"
+MAX_RETRY = 12
 
 
 class HTMLToMarkdown:
@@ -54,13 +55,21 @@ class HTMLToMarkdown:
             "Authorization": f'Bearer {jina_key}'
         }
 
-        try:
-            response = requests.get(content_url, headers=headers, timeout=20)
-            response.raise_for_status()  # Raise exception for 4xx/5xx status codes            
-            print("Request successful!\nResponse content:")
+        for n in range(1, MAX_RETRY + 1):
+            try:
+                response = requests.get(content_url, headers=headers, timeout=20)
+                response.raise_for_status()  # Raise exception for 4xx/5xx status codes            
+                print("Request successful!\nResponse content:")
 
-            self.file_manager.save_markdown(response.text, url)
-            return response.text
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Request failed: {str(e)}")
+                self.file_manager.save_markdown(response.text, url)
+                return response.text
+
+            except requests.exceptions.RequestException as e:
+                print(f"Request failed (attempt {n}): {str(e)}")
+                if n < MAX_RETRY:
+                    sleep_time = 5 * n
+                    print(f"Retrying in {sleep_time} seconds...")
+                    sleep(sleep_time)
+                else:
+                    print("Max retries reached. Giving up.")
+        return None

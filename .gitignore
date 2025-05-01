@@ -4,6 +4,8 @@ scrape-to-markdown/config/kws_urls.json
 scrape-to-markdown/config/keywords.json
 url_extract_hist.json
 url_kw_arr.json
+scrape-to-markdown/file_store
+merged_markdown*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
