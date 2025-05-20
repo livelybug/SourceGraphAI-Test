@@ -14,6 +14,8 @@ copy .env.example .env
 uv run ruff check scrape-to-markdown/
 python scrape-to-markdown/main.py
 
+# wait and find the result in scrape-to-markdown/file_store
+
 # python scrape-to-markdown/main.py --help
 # python scrape-to-markdown/main.py --skip-search True
 ```

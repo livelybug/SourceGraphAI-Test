@@ -8,7 +8,7 @@ from storage.file_manager import FileManager
 jina_key = os.getenv("JINA_API_KEY")
 jina_url = "https://r.jina.ai/"
 MAX_RETRY_SINGLE = 1
-MAX_ROUND = 12
+MAX_ROUND = 5
 
 
 class HTMLToMarkdown:
@@ -83,7 +83,10 @@ class HTMLToMarkdown:
         # n is the times of failed request
         for n in range(1, MAX_RETRY_SINGLE + 1):
             try:
-                response = requests.get(content_url, headers=headers, timeout=20)
+                response = requests.get(
+                    content_url, 
+                    headers=headers, 
+                    timeout=20)
                 response.raise_for_status()  # Raise exception for 4xx/5xx status codes            
                 print("Request successful!\nResponse content:")
 
