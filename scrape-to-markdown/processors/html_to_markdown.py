@@ -14,24 +14,24 @@ MAX_ROUND = 12
 class HTMLToMarkdown:
     """Converts HTML content to Markdown format"""
     
-    def __init__(self, **kwargs):
+    def __init__(self, file_mn: FileManager, **kwargs):
         """
         Initialize converter with optional configuration
         
         Args:
             **kwargs: Configuration options for the HTML to Markdown converter
         """
-        cr_dir = os.path.join(os.path.dirname(__file__), 'file_store')
-        self.file_manager = FileManager(base_dir=cr_dir)
+        if file_mn is None:
+            raise ValueError("file_mn is required")
+        self.file_manager = file_mn
+    
         
-        
-    def convert(self, html_content: str, urls: List[str]) -> Optional[str]:
+    def convert(self, urls: List[str]) -> Optional[str]:
         """
-        Convert HTML content to Markdown
+        Convert HTML content of urls to Markdown
         
         Args:
-            html_content: HTML content as string
-            url: Source URL for metadata
+            url: Source URL
             
         Returns:
             Markdown content as string or None if conversion failed

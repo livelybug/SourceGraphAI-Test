@@ -1,0 +1,14 @@
+[project]
+name = "browser-use-test"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "browser-use>=0.1.24",
+    "dotenv>=0.9.9",
+    "langchain-openai>=0.3.17",
+    "psutil>=7.0.0",
+    "pyobjtojson>=0.3",
+    "ruff>=0.9.10",
+]

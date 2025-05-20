@@ -182,3 +182,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 /scrape-to-markdown/processors/file_store/
+keywords_full.json

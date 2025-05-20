@@ -1,23 +1,30 @@
-
+from datetime import datetime
+import glob
+import os
 from pathlib import Path
 import re
-from urllib.parse import urlparse
 from utils.utils import get_last_subpath
+from utils.merge_md import extract_title, create_anchor
 
 
 class FileManager:
     """Manages file operations for saving Markdown content"""
     
-    def __init__(self, base_dir: str = "scraped_content"):
+    def __init__(self, base_dir: Path = None, timestp: str = "000"):
         """
         Initialize file manager
         
         Args:
             base_dir: Base directory for saving files
         """
-        self.base_dir = Path(base_dir)
-        self.base_dir.mkdir(exist_ok=True, parents=True)
-        print("self.base_dir", self.base_dir)
+        base_dir = os.path.join(os.path.dirname(__file__), '..', 'file_store')
+        self.base_dir = base_dir
+        self.dir_single = os.path.join(self.base_dir, timestp + "-single")
+        self.dir_merged = os.path.join(self.base_dir, timestp + "-merged")
+        Path(self.dir_single).mkdir(exist_ok=True, parents=True)
+        Path(self.dir_merged).mkdir(exist_ok=True, parents=True)
+        print("dir_single", self.dir_single)
+        print("dir_merged", self.dir_merged)
     
     def generate_filename(self, url: str, title: str = None) -> str:
         """
@@ -54,9 +61,57 @@ class FileManager:
             Path to saved file
         """
         filename = self.generate_filename(url, title)
-        filepath = self.base_dir / filename
-        # print(filepath)
+        filepath = os.path.join(self.dir_single, filename)
+        
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
             
         return str(filepath)
+    
+    def merge_markdown_files(self, directory_path=None, output_file=None):
+        """Merge all markdown files in the directory into a single file with TOC."""
+        if not output_file:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = os.path.join(self.dir_merged, f"merged_markdown_{timestamp}.md")
+        
+        # Get all markdown files in the directory
+        dir_single = self.dir_single
+        md_files = glob.glob(os.path.join(dir_single, "*.md"))
+        
+        if not md_files:
+            print(f"No markdown files found in {dir_single}")
+            return
+        
+        # Prepare table of contents and content sections
+        toc = ["# Table of Contents\n"]
+        content_sections = []
+        
+        for file_path in md_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    
+                    # Extract title
+                    title = extract_title(content)
+                    anchor = create_anchor(title)
+                    
+                    # Add to TOC
+                    toc.append(f"- [{title}](#{anchor})")
+                    
+                    # Prepare content section
+                    section = f"\n\n## {title} <a id='{anchor}'></a>\n\n{content}"
+                    content_sections.append(section)
+                    
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
+        
+        # Combine TOC and content sections
+        merged_content = "\n".join(toc) + "\n" + "\n".join(content_sections)
+        
+        # Write to output file
+        with open(output_file, 'w', encoding='utf-8') as output:
+            output.write(merged_content)
+        
+        print(f"Successfully merged {len(md_files)} markdown files into {output_file}")
+        return output_file
+    
